@@ -4,8 +4,11 @@ from datetime import datetime
 import requests_cache
 import time
 from IPython.core.display import clear_output
+import pandas as pd
+import math
 
-# Get the number of tracks that a user has scrobbled today
+# todo:
+# throw all of the json data into a pandas dataframe so that I can see it better
 
 
 # API Response Codes
@@ -48,44 +51,116 @@ def jprint(obj):
     text = json.dumps(obj, sort_keys=True, indent=4)
     print(text)
 
-
+# test
 #jprint(r.json())
 
-# Get all of the pages of data
-responses_list = []
-page = 1
-total_pages = 99999
 
-while page <= total_pages:
-    payload = {
-        'method': 'user.getrecenttracks',
-        'user': 'noahwlibby',
-        'limit': 500,
-        'page': page
-    }
+def get_tracks():
+    page = 1
+    total_pages = 99999
+    responses =  []
+    while page <= total_pages:
+        payload = {
+            'method': 'user.getrecenttracks',
+            'user': 'noahwlibby',
+            'extended': 1,
+            'limit': 200,
+            'page': page
+        }
 
-    # print some of the output so we can see the status
-    print("Requesting page {}/{}".format(page, total_pages))
-    # clear the output to make things neater
-    clear_output(wait = True)
+        # print some of the output so we can see the status
+        print("Requesting page {}/{}".format(page, total_pages))
+        # clear the output to make things neater
+        clear_output(wait = True)
 
-    # make the API call
-    response = lastfm_get(payload)
+        # make the API call
+        response = lastfm_get(payload)
 
-    # if we get an error, print the response and halt the loop
-    if response.status_code != 200:
-        print(response.text)
-        break
+        # if we get an error, print the response and halt the loop
+        if response.status_code != 200:
+            print(response.text)
+            break
 
-    # extract pagination info
-    page = int(response.json())
+        # extract pagination info
+        page = int(response.json()['recenttracks']['@attr']['page'])
+        total_pages = int(response.json()['recenttracks']['@attr']['totalPages'])
+
+        # append response
+        responses.append(response)
+
+        # if it's not a cached result, sleep
+        if not getattr(response, 'from_cache', False):
+            time.sleep(0.25)
+
+        # increment the page number
+        page += 1
+    return responses
+
+"""
+r0 = responses[0]
+r0_json = r0.json()
+r0_recenttracks = r0_json['recenttracks']['track']
+r0_df = pd.DataFrame(r0_recenttracks)
+print(r0_df.head())
+"""
+responses = get_tracks()
+# bring the list of lists into a list of dataframes and then to a single df
+frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
+alltracks = pd.concat(frames, sort=True)
+alltracks.info()
+
+def playing_now(df):
+    for i in df['@attr']:
+        if isinstance(i,dict): # there should only ever be one dictionary, with value 'true' - everything else is NaN
+            print(i)
+        else:
+            pass
+
+a = playing_now(alltracks)
+print(a)
+
+#print(a)
+#print(alltracks['@attr'].all())
+
+#playing = playing_now(responses)
+#print(playing)
+
+#recenttracks_dump = jprint(r.json()['recenttracks']['track'])
+
+
+#jprint(r.json()[recenttracks_dump])
+
+
+# Need a solution to access the attributes of a nested JSON object.
+# I.e.: [recenttracks][track][@attr] returns an error
+def nested_jprint(obj):
+    # Convert your input dictionary to a string using json.dumps()
+    data = json.dumps(obj, sort_keys = True, indent = 4)
+    # Write the string to a file
+    with open("test.json", 'w') as test:
+        test.write(data)
+
+    # Read it back
+    with open("test.json") as test:
+        data = test.read()
+
+    # decoding the JSON to dictionary
+    d = json.loads(data)
+
+#a = nested_jprint(alltracks)
+
+
+"""
+# get track counts
+track_count = [len(r.json()['recenttracks']['track']) for r in responses]
+pd.Series(track_count).value_counts()
+print(track_count)
+"""
 
 
 
-
-
-
-
+#if __name__ == "__main__":
+# user = input("Username: ")
 
 
 
