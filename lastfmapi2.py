@@ -109,12 +109,20 @@ frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
 alltracks.info()
 
+
+
+# FIGURE OUT how to return the name of the song that is currently playing - likely by using pos (the position) in the loop. Right now
+# printing pos returns a lot of songs, not just one. Figure out how the data actually is structured in the df level
+
+
 def playing_now(df):
+    pos = 1
     for i in df['@attr']:
         if isinstance(i,dict): # there should only ever be one dictionary, with value 'true' - everything else is NaN
-            print(i)
+            return pos
+            break
         else:
-            pass
+            pos += 1
 
 a = playing_now(alltracks)
 print(a)
