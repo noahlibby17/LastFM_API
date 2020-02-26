@@ -96,13 +96,7 @@ def get_tracks():
         page += 1
     return responses
 
-"""
-r0 = responses[0]
-r0_json = r0.json()
-r0_recenttracks = r0_json['recenttracks']['track']
-r0_df = pd.DataFrame(r0_recenttracks)
-print(r0_df.head())
-"""
+
 responses = get_tracks()
 # bring the list of lists into a list of dataframes and then to a single df
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
@@ -111,15 +105,17 @@ alltracks.info()
 
 
 
-# FIGURE OUT how to return the name of the song that is currently playing - likely by using pos (the position) in the loop. Right now
-# printing pos returns a lot of songs, not just one. Figure out how the data actually is structured in the df level
-
+# Also figure out why the data isn't actually pulling in new data. Probably somethin to do with the way that the cache is set up
 
 def playing_now(df):
-    pos = 1
+    pos = 0
     for i in df['@attr']:
         if isinstance(i,dict): # there should only ever be one dictionary, with value 'true' - everything else is NaN
-            return pos
+            trackname   = df.iloc[pos,7]
+            artistname  = df.iloc[pos,2]
+            date        = df.iloc[pos,3]
+            album       = df.iloc[pos,2]
+            return trackname
             break
         else:
             pos += 1
@@ -127,8 +123,10 @@ def playing_now(df):
 a = playing_now(alltracks)
 print(a)
 
+#alltracks.to_csv(r'testcsv.csv')
+
 #print(a)
-#print(alltracks['@attr'].all())
+#print(alltracks['artist'][1])
 
 #playing = playing_now(responses)
 #print(playing)
