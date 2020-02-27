@@ -6,6 +6,7 @@ import time
 from IPython.core.display import clear_output
 import pandas as pd
 import math
+import csv
 
 # todo:
 # throw all of the json data into a pandas dataframe so that I can see it better
@@ -24,7 +25,9 @@ import math
 #shared_secret = a571d9b0049be7880a5da881da7df6d7
 
 
-requests_cache.install_cache()
+
+
+requests_cache.install_cache('lastfm_cache')
 
 def lastfm_get(payload):
     # define headers and URL
@@ -38,12 +41,13 @@ def lastfm_get(payload):
     response = requests.get(url, headers=headers, params=payload)
     return response
 
+"""
 r = lastfm_get({
     'method': 'user.getrecenttracks',
     'user': 'noahwlibby'
 })
 #print(r.status_code)
-
+"""
 
 
 def jprint(obj):
@@ -88,6 +92,16 @@ def get_tracks():
         # append response
         responses.append(response)
 
+        # open file - outside of while loop
+        # does this data already exist in the file? use date.max: if date(entry) > date.max(csv file) ; utcadjust = tzinfo.utcoffset(date)
+        # if no, if the date is greater than the current max date, add it to responses
+        # at the end:
+        # convert responses to a pandas dateframe
+        # read the csv file into a variable
+        # and append the responses to the csv file
+        # save the file
+        # close the file - outside of while loop
+
         # if it's not a cached result, sleep
         if not getattr(response, 'from_cache', False):
             time.sleep(0.25)
@@ -102,29 +116,40 @@ responses = get_tracks()
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
 alltracks.info()
+#alltracks.head()
 
 
 
-# Also figure out why the data isn't actually pulling in new data. Probably somethin to do with the way that the cache is set up
+# Also figure out why the api isn't actually pulling in new data. Probably somethin to do with the way that the cache is set up
 
 def playing_now(df):
     pos = 0
-    for i in df['@attr']:
-        if isinstance(i,dict): # there should only ever be one dictionary, with value 'true' - everything else is NaN
-            trackname   = df.iloc[pos,7]
-            artistname  = df.iloc[pos,2]
-            date        = df.iloc[pos,3]
-            album       = df.iloc[pos,2]
-            return trackname
-            break
-        else:
-            pos += 1
+    try:
+        for i in df['@attr']:
+            if isinstance(i,dict): # there should only ever be one dictionary, with value 'true' - everything else is NaN
+                trackname   = df.iloc[pos,7]
+                artistname  = df.iloc[pos,2]
+                date        = df.iloc[pos,3]
+                album       = df.iloc[pos,2]
+                return trackname
+                break
+            else:
+                pos += 1
+    except:
+        print("not currently listening")
+        return
+
+def totalsongstoday(df):
+    today = date.today()
+
+
 
 a = playing_now(alltracks)
 print(a)
 
+print(alltracks.columns)
 #alltracks.to_csv(r'testcsv.csv')
-
+#print(alltracks.iloc[1,6])
 #print(a)
 #print(alltracks['artist'][1])
 
