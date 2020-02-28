@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import requests
 import json
 from datetime import datetime
@@ -7,9 +8,14 @@ from IPython.core.display import clear_output
 import pandas as pd
 import math
 import csv
+import os.path
+from os import path
 
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
 # Doesn't store anything yet, just grabs the data and periodically sends notifications through IFTTT
+
+# Only set the API to pull data from the max date in the csv file
+# Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
 # API Response Codes
 #200: Everything went okay, and the result has been returned (if any).
@@ -23,7 +29,29 @@ import csv
 #apikey = 6a76bb9ed119dd4394c3f3bb5c0dcbd3
 #shared_secret = a571d9b0049be7880a5da881da7df6d7
 
-requests_cache.install_cache('lastfm_cache')
+# ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
+
+# Load up the most recent date added to the .csv db
+try: # if we have a spreadsheet with data, NICE
+    if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
+        print('File exists! Wonderful! You are a pro!')
+        f = open('lastfm_db.csv', "r") # read the csv
+        dates = f[:,3] # grab all dates
+        #pullDate = str(max(dates))        # set max date
+        pullDate = '1582866560'
+        print(pullDate)
+    else: # throw an error if the file doesn't exist, carry on to except
+        print("File does not exist!")
+        raise Exception("File does not exist!")
+
+except: # if this is the first time we are ever calling this and we don't have a spreadsheet, make one
+    print("First time running! Welcome to the SCROBBLE :)")
+    f = open("lastfm_db.csv", "a")
+    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
+
+
+#requests_cache.install_cache('lastfm_cache')
+
 
 def lastfm_get(payload):
     # define headers and URL
@@ -43,11 +71,11 @@ def jprint(obj):
     print(text)
 
 
-def get_tracks_today():
+def get_tracks():
     page = 1
     total_pages = 99999
     responses =  []
-    today = date.today()
+    today = datetime.today()
 
     while page <= total_pages:
         payload = {
@@ -55,8 +83,8 @@ def get_tracks_today():
             'user': 'noahwlibby',
             'extended': 1,
             'limit': 200,
-            'page': page
-            'from': today
+            'page': page,
+            'from': pullDate
         }
 
         # print some of the output so we can see the status
@@ -93,7 +121,7 @@ def get_tracks_today():
     return responses
 
 
-responses = get_tracks_today()
+responses = get_tracks()
 # bring the list of lists into a list of dataframes and then to a single df
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
@@ -129,8 +157,8 @@ def totalsongstoday(df):
 a = playing_now(alltracks)
 print(a)
 
-print(alltracks.columns)
-#alltracks.to_csv(r'testcsv.csv')
+
+alltracks.to_csv(r'testcsv3.csv')
 #print(alltracks.iloc[1,6])
 #print(a)
 #print(alltracks['artist'][1])
