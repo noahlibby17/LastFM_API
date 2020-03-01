@@ -25,9 +25,8 @@ import csv
 #shared_secret = a571d9b0049be7880a5da881da7df6d7
 
 
+#requests_cache.install_cache('lastfm_cache')
 
-
-requests_cache.install_cache('lastfm_cache')
 
 def lastfm_get(payload):
     # define headers and URL
@@ -147,7 +146,9 @@ def totalsongstoday(df):
 a = playing_now(alltracks)
 print(a)
 
-print(alltracks.columns)
+
+print(alltracks.iloc[1,2]['uts'])
+#{'uts': '1582926138', '#text': '28 Feb 2020, 21:42'}
 #alltracks.to_csv(r'testcsv.csv')
 #print(alltracks.iloc[1,6])
 #print(a)

@@ -4,10 +4,10 @@ import json
 from datetime import datetime
 import requests_cache
 import time
-from IPython.core.display import clear_output
+#from IPython.core.display import clear_output
 import pandas as pd
 import math
-import csv
+#import csv
 import os.path
 from os import path
 
@@ -30,25 +30,41 @@ from os import path
 #shared_secret = a571d9b0049be7880a5da881da7df6d7
 
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
+#requests_cache.install_cache('lastfm_cache')
+
+# create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time
 
 # Load up the most recent date added to the .csv db
-try: # if we have a spreadsheet with data, NICE
-    if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
-        print('File exists! Wonderful! You are a pro!')
-        f = open('lastfm_db.csv', "r") # read the csv
-        dates = f[:,3] # grab all dates
-        #pullDate = str(max(dates))        # set max date
-        pullDate = '1582866560'
-        print(pullDate)
-    else: # throw an error if the file doesn't exist, carry on to except
-        print("File does not exist!")
-        raise Exception("File does not exist!")
+#try: # if we have a spreadsheet with data, NICE
+if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
+    print('File exists! Wonderful! You are a pro!')
+    print('loading')
+    time.sleep(1)
+    db = pd.read_csv('lastfm_db.csv', delimiter = ',') #, usecols=['date']) # read the csv
+    time.sleep(1)
+    print('loaded')
+    dates = db.iloc[:,3] #['uts'] # grab all dates
+    print(dates)
+    time.sleep(3)
+    #pullDate = str(max(dates))        # set max date
+    pullDate = max(dates)
+    print('Pull Date: ' + pullDate)
+    time.sleep(3)
 
-except: # if this is the first time we are ever calling this and we don't have a spreadsheet, make one
+elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
+    print("File does not exist!")
     print("First time running! Welcome to the SCROBBLE :)")
-    f = open("lastfm_db.csv", "a")
-    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
+    time.sleep(3)
+    f = open("lastfm_db.csv", "w")
+    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"])
+    header.to_csv(f, header=True)
+    pullDate = '1582866560'  #"1572584400"    # set max date as a date before when I started scrobbling
+    print("we're here")
+    f.close()
+        #raise Exception("File does not exist!")
 
+#except: # if this is the first time we are ever calling this and we don't have a spreadsheet, make one
+#    print("WE HAVE AN ERROR")
 
 #requests_cache.install_cache('lastfm_cache')
 
@@ -73,7 +89,7 @@ def jprint(obj):
 
 def get_tracks():
     page = 1
-    total_pages = 99999
+    total_pages = 999999
     responses =  []
     today = datetime.today()
 
@@ -90,7 +106,7 @@ def get_tracks():
         # print some of the output so we can see the status
         print("Requesting page {}/{}".format(page, total_pages))
         # clear the output to make things neater
-        clear_output(wait = True)
+        #clear_output(wait = True)
 
         # make the API call
         response = lastfm_get(payload)
@@ -119,7 +135,6 @@ def get_tracks():
         # increment the page number
         page += 1
     return responses
-
 
 responses = get_tracks()
 # bring the list of lists into a list of dataframes and then to a single df
@@ -154,11 +169,11 @@ def totalsongstoday(df):
 
 
 
-a = playing_now(alltracks)
-print(a)
+#a = playing_now(alltracks)
+#print(a)
 
-
-alltracks.to_csv(r'testcsv3.csv')
+with open('lastfm_db.csv', 'a') as f:
+    alltracks.to_csv(f, mode="a", header=False)
 #print(alltracks.iloc[1,6])
 #print(a)
 #print(alltracks['artist'][1])
