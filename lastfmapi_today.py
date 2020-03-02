@@ -12,10 +12,9 @@ import os.path
 from os import path
 
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
-# Doesn't store anything yet, just grabs the data and periodically sends notifications through IFTTT
+# All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
 
 # Only set the API to pull data from the max date in the csv file
-# Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
 # API Response Codes
 #200: Everything went okay, and the result has been returned (if any).
@@ -33,16 +32,20 @@ from os import path
 #requests_cache.install_cache('lastfm_cache')
 
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time
+# Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
+
 
 # Load up the most recent date added to the .csv db
 #try: # if we have a spreadsheet with data, NICE
 if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
     print('File exists! Wonderful! You are a pro!')
     print('loading')
+
     time.sleep(1)
     db = pd.read_csv('lastfm_db.csv', delimiter = ',') #, usecols=['date']) # read the csv
     time.sleep(1)
     print('loaded')
+
     dates = db.iloc[:,3] #['uts'] # grab all dates
     print(dates)
     time.sleep(3)
@@ -59,7 +62,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"])
     header.to_csv(f, header=True)
     pullDate = '1582866560'  #"1572584400"    # set max date as a date before when I started scrobbling
-    print("we're here")
+    print("BACK IN BUSINESS")
     f.close()
         #raise Exception("File does not exist!")
 
@@ -172,8 +175,8 @@ def totalsongstoday(df):
 #a = playing_now(alltracks)
 #print(a)
 
-with open('lastfm_db.csv', 'a') as f:
-    alltracks.to_csv(f, mode="a", header=False)
+with open('lastfm_db.csv', 'w') as f:
+    alltracks.to_csv(f, mode="a", header=True)
 #print(alltracks.iloc[1,6])
 #print(a)
 #print(alltracks['artist'][1])
