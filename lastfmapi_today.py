@@ -65,7 +65,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     print("First time running! Welcome to the SCROBBLE :)")
     time.sleep(3)
     f = open("lastfm_db.csv", "w")
-    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"])
+    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
     #pullDate = "1572584400"    # set max date as a date before when I started scrobbling
     print("BACK IN BUSINESS")
