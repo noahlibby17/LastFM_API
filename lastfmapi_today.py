@@ -46,11 +46,27 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
     time.sleep(1)
     print('loaded')
 
-    dates = db.loc["date"]
-    time.sleep(3)
+    dates = db['date'] # gets just the data column into a series
+    #print(max(dates, key=dates.get))
+    loaded = []
+    for item in dates.iteritems():
+        load = json.loads(dates.iloc[item])
+        load = load.replace("\'", "\"")
+        print(load)
+        loaded.append(load)
+    print(loaded)
+
+    print(max(dates.iterkeys(), key=(lambda key: dates['uts'])))
+    dates = dates.astype('float64').dtypes
     maxDateString = max(dates)
+    print(dates)
+    time.sleep(3)
+
+    maxDateString = max(dates)
+    print(maxDateString)
     maxDateString = maxDateString.replace("\'", "\"")
     time.sleep(1)
+
     pullDate = json.loads(maxDateString)
     pullDate = int(pullDate['uts'])
     time.sleep(1)
@@ -67,7 +83,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     f = open("lastfm_db.csv", "w")
     header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
-    #pullDate = "1572584400"    # set max date as a date before when I started scrobbling
+    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
     print("BACK IN BUSINESS")
     f.close()
         #raise Exception("File does not exist!")
