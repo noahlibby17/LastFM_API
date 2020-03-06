@@ -2,7 +2,7 @@
 import requests
 import json
 from datetime import datetime
-import requests_cache
+#import requests_cache
 import time
 #from IPython.core.display import clear_output
 import pandas as pd
@@ -46,12 +46,18 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
     time.sleep(1)
     print('loaded')
 
-    dates = db.iloc[:,3] #['uts'] # grab all dates
-    print(dates)
+    dates = db.loc["date"]
     time.sleep(3)
-    #pullDate = str(max(dates))        # set max date
-    pullDate = max(dates)
-    print('Pull Date: ' + pullDate)
+    maxDateString = max(dates)
+    maxDateString = maxDateString.replace("\'", "\"")
+    time.sleep(1)
+    pullDate = json.loads(maxDateString)
+    pullDate = int(pullDate['uts'])
+    time.sleep(1)
+    print(pullDate)
+
+    print('Pull Date: ' + str(pullDate))
+    print(pullDate)
     time.sleep(3)
 
 elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
@@ -59,9 +65,9 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     print("First time running! Welcome to the SCROBBLE :)")
     time.sleep(3)
     f = open("lastfm_db.csv", "w")
-    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"])
+    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
-    pullDate = '1582866560'  #"1572584400"    # set max date as a date before when I started scrobbling
+    #pullDate = "1572584400"    # set max date as a date before when I started scrobbling
     print("BACK IN BUSINESS")
     f.close()
         #raise Exception("File does not exist!")
