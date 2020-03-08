@@ -34,6 +34,11 @@ from os import path
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
+def string_to_dict(dict_string):
+    # Convert to proper json format
+    dict_string = dict_string.replace("\'", "\"")
+    return json.loads(dict_string)
+
 
 # Load up the most recent date added to the .csv db
 #try: # if we have a spreadsheet with data, NICE
@@ -46,28 +51,22 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
     time.sleep(1)
     print('loaded')
 
-    dates = db['date'] # gets just the data column into a series
-    #print(max(dates, key=dates.get))
-    loaded = []
-    for item in dates.iteritems():
-        load = json.loads(dates.iloc[item])
-        load = load.replace("\'", "\"")
-        print(load)
-        loaded.append(load)
-    print(loaded)
+    #dates = db['date'] # gets just the data column into a series
+    date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)
+    date_dump['loaded'] = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
+    print(date_dump['loaded'])
 
-    print(max(dates.iterkeys(), key=(lambda key: dates['uts'])))
-    dates = dates.astype('float64').dtypes
+
+
+    #dates = dates.astype('float64').dtypes
     maxDateString = max(dates)
     print(dates)
     time.sleep(3)
 
     maxDateString = max(dates)
     print(maxDateString)
-    maxDateString = maxDateString.replace("\'", "\"")
     time.sleep(1)
 
-    pullDate = json.loads(maxDateString)
     pullDate = int(pullDate['uts'])
     time.sleep(1)
     print(pullDate)
