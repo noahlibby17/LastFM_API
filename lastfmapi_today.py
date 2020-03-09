@@ -10,6 +10,7 @@ import math
 #import csv
 import os.path
 from os import path
+from operator import attrgetter
 
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
 # All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
@@ -31,13 +32,19 @@ from os import path
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
 #requests_cache.install_cache('lastfm_cache')
 
-# create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time
+# create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
 def string_to_dict(dict_string):
     # Convert to proper json format
     dict_string = dict_string.replace("\'", "\"")
     return json.loads(dict_string)
+
+def stringKey_to_int(df, keyname):
+    pass
+    #print(max(date_dump, key=attrgetter('uts')))
+    #d = {k:int(v) for k,v in df.items()}
+
 
 
 # Load up the most recent date added to the .csv db
@@ -53,29 +60,18 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
 
     #dates = db['date'] # gets just the data column into a series
     date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)
-    date_dump['loaded'] = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
-    print(date_dump['loaded'].iloc[1]['uts'])
-    recentDate = max(date_dump['loaded'].keys(), key=(lambda key: date_dump['loaded'].loc['uts']))
-    print(recentDate)
+    date_dump = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
+    date_dump.to_csv("data_dump.csv", header=True)
 
 
+    lst = []
+    for i in range(1, date_dump.count()):
+        lst.append(int(date_dump.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
 
-    #dates = dates.astype('float64').dtypes
-    maxDateString = max(dates)
-    print(dates)
-    time.sleep(3)
+    pullDate = (max(lst))
+    del lst # clear this from memory
+    # SAVE THIS: print(date_dump.iloc[1]['uts']) # this might be a much simpler solution if the .csv is ordered by timestamp
 
-    maxDateString = max(dates)
-    print(maxDateString)
-    time.sleep(1)
-
-    pullDate = int(pullDate['uts'])
-    time.sleep(1)
-    print(pullDate)
-
-    print('Pull Date: ' + str(pullDate))
-    print(pullDate)
-    time.sleep(3)
 
 elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
     print("File does not exist!")
@@ -85,8 +81,15 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
     pullDate = "1572584400"    # set max date as a date before when I started scrobbling
-    print("BACK IN BUSINESS")
     f.close()
+
+    g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
+    header = pd.DataFrame(columns = ["MaxDate"]) # don't add a column for currently listening
+    header.to_csv(g, header=True)
+    g.close()
+    print("BACK IN BUSINESS")
+
+
         #raise Exception("File does not exist!")
 
 #except: # if this is the first time we are ever calling this and we don't have a spreadsheet, make one
