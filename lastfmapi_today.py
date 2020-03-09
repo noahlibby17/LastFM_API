@@ -54,7 +54,9 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
     #dates = db['date'] # gets just the data column into a series
     date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     date_dump['loaded'] = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
-    print(date_dump['loaded'])
+    print(date_dump['loaded'].iloc[1]['uts'])
+    recentDate = max(date_dump['loaded'].keys(), key=(lambda key: date_dump['loaded'].loc['uts']))
+    print(recentDate)
 
 
 
