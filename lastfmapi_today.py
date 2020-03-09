@@ -32,6 +32,11 @@ from operator import attrgetter
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
 #requests_cache.install_cache('lastfm_cache')
 
+## TODO:
+# • Move the storage from .csv to sqlite database
+# • Copy/move code to get max value from the top to inside/before API call
+# • Store the max values in a separate .csv file for easier parsing and call that file when trying to find max value
+
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
@@ -48,7 +53,6 @@ def stringKey_to_int(df, keyname):
 
 
 # Load up the most recent date added to the .csv db
-#try: # if we have a spreadsheet with data, NICE
 if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
     print('File exists! Wonderful! You are a pro!')
     print('loading')
