@@ -9,7 +9,7 @@ import time
 #from IPython.core.display import clear_output
 import pandas as pd
 import math
-import csv
+#import csv
 import os.path
 from os import path
 from operator import attrgetter
@@ -39,13 +39,6 @@ from operator import attrgetter
 # • Copy/move code to get max value from the top to inside/before API call
 # • Store the max values in a separate .csv file for easier parsing and call that file when trying to find max value
 
-# create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
-# Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
-
-#################################
-##### FUNCTION DEFINITIONS ######
-#################################
-
 def string_to_dict(dict_string):
     # Convert to proper json format
     dict_string = dict_string.replace("\'", "\"")
@@ -67,6 +60,43 @@ def readDataFindMax(filename):
         del lst
         return pullDate
         # SAVE THIS: print(date_dump.iloc[1]['uts']) # this might be a much simpler solution if the .csv is ordered by timestamp
+
+# Load up the most recent date added to the .csv db
+if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
+    print('File exists! Wonderful! You are a pro!')
+    print('loading')
+
+    #if path.exists('maxDateRepo.csv') == True:
+        #dates = db['date'] # gets just the data column into a series
+    print('We have a max date file! Reading from max date file...')
+    db = pd.read_csv('maxDateRepo.csv', delimiter = ',') #, usecols=['date']) # read the csv
+    pullDate = db[['MaxDate']].idxmax()
+    print(pullDate)
+
+    """
+    # Just to catch some extra errors for now... will probably deprecate this catch
+    elif path.exists('maxDateRepo.csv') == False:
+        #dates = db['date'] # gets just the data column into a series
+        print('We DO NOT have a max date file! Reading from overall database...')
+        readDataFindMax('lastfm_db.csv')
+    """
+
+elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
+    print("File does not exist!")
+    print("First time running! Welcome to the SCROBBLE :)")
+    time.sleep(3)
+    f = open("lastfm_db.csv", "w")
+    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
+    header.to_csv(f, header=True)
+    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
+    f.close()
+
+    g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
+    header = pd.DataFrame(columns = ["MaxDate"]) # don't add a column for currently listening
+    header.to_csv(g, header=True)
+    g.close()
+    print("BACK IN BUSINESS")
+
 
 def lastfm_get(payload):
     # define headers and URL
@@ -132,6 +162,10 @@ def get_tracks():
 
     return responses
 
+# bring the list of lists into a list of dataframes and then to a single df
+responses = get_tracks()
+frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
+alltracks = pd.concat(frames, sort=True)
 
 def playing_now(df):
     pos = 0
@@ -150,7 +184,6 @@ def playing_now(df):
         print("not currently listening")
         return
 
-
 def playing_now_check(df):
     pos = 0
     try:
@@ -163,113 +196,7 @@ def playing_now_check(df):
     except:
         return False
 
-
-##########################
-##### FUNCTION CALLS #####
-##########################
-
-# Load up the most recent date added to the .csv db
-if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
-    print('File exists! Wonderful! You are a pro!')
-    print('loading')
-
-    #if path.exists('maxDateRepo.csv') == True:
-        #dates = db['date'] # gets just the data column into a series
-    print('We have a max date file! Reading from max date file...')
-    db = pd.read_csv('maxDateRepo.csv', delimiter = ',') #, usecols=['date']) # read the csv
-    pullDate = db[['MaxDate']].idxmax()
-    print(pullDate)
-
-    """
-    # Just to catch some extra errors for now... will probably deprecate this catch
-    elif path.exists('maxDateRepo.csv') == False:
-        #dates = db['date'] # gets just the data column into a series
-        print('We DO NOT have a max date file! Reading from overall database...')
-        readDataFindMax('lastfm_db.csv')
-    """
-
-elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
-    print("File does not exist!")
-    print("First time running! Welcome to the SCROBBLE :)")
-    time.sleep(3)
-    f = open("lastfm_db.csv", "w")
-    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
-    header.to_csv(f, header=True)
-    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
-    f.close()
-
-    g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
-    header = pd.DataFrame(columns = ['MaxDate']) # don't add a column for currently listening
-    header.to_csv(g, header=True)
-    g.close()
-    print("BACK IN BUSINESS")
-
-# bring the list of lists into a list of dataframes and then to a single df
-responses = get_tracks()
-frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
-alltracks = pd.concat(frames, sort=True)
-alltracks.info() # prints info about the df
-
-# remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
-if playing_now_check(alltracks) == True:
-    print('Currently listening!')
-    #alltracks[alltracks['@attr'] != '{\'nowplaying\': \'true\'}']
-    # Get names of indexes for which column Age has value 30
-    indexNames = alltracks[alltracks['@attr'] == '{\'nowplaying\': \'true\'}'].index
-    # Delete these row indexes from dataFrame
-    alltracks.drop(alltracks[indexNames] , inplace=True)
-    print('DROPPED')
-    ### APPEND ALLTRACKS TO THE .CSV DB FILE
-    alltracks.iloc[2:,:].to_csv('lastfm_db.csv', mode="a", header=False)
-
-    ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[2:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
-    lst2 = []
-    for i in range(1, date_dump2.count()):
-        lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
-
-    # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))
-    g = open('maxDateRepo.csv', 'a+')
-    csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.now(),maxDate]) # Add contents of list as last row in the csv file
-    g.close() # close the file
-
-
-###### LEFT OFF: Trying to get maxdate to pull properly from maxdaterepo, trying to delete rows with currently listenign tracks and writing only columns that I want
-
-
-
-elif playing_now_check == False:
-    print('Not currently listening. Makes the code easier...')
-    alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
-
-    ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks['date'].iloc[1:,:].dropna() # gets rid of NA values (for currently listening to tracks)
-    lst2 = []
-    for i in range(1, date_dump2.count()):
-        lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
-
-    # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))
-    g = open('maxDateRepo.csv', 'a+')
-    csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.now(),maxDate]) # Add contents of list as last row in the csv file
-    g.close() # close the file
-
-
-
 def totalsongstoday(df):
     today = date.today()
 
-
-"""
-# get track counts
-track_count = [len(r.json()['recenttracks']['track']) for r in responses]
-pd.Series(track_count).value_counts()
-print(track_count)
-"""
-
-
-#if __name__ == "__main__":
-# user = input("Username: ")
+print(playing_now(alltracks))
