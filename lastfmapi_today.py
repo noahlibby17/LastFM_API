@@ -32,7 +32,7 @@ from operator import attrgetter
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
 #requests_cache.install_cache('lastfm_cache')
 
-## TODO:
+## TO DO:
 # • Move the storage from .csv to sqlite database
 # • Copy/move code to get max value from the top to inside/before API call
 # • Store the max values in a separate .csv file for easier parsing and call that file when trying to find max value
@@ -48,8 +48,7 @@ def string_to_dict(dict_string):
 def stringKey_to_int(df, keyname):
     pass
     #print(max(date_dump, key=attrgetter('uts')))
-    #d = {k:int(v) for k,v in df.items()}
-
+    #d = {k:int(v) for k,v in df.items()
 
 
 # Load up the most recent date added to the .csv db
@@ -66,7 +65,6 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
     date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     date_dump = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
     date_dump.to_csv("data_dump.csv", header=True)
-
 
     lst = []
     for i in range(1, date_dump.count()):
@@ -94,14 +92,6 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     print("BACK IN BUSINESS")
 
 
-        #raise Exception("File does not exist!")
-
-#except: # if this is the first time we are ever calling this and we don't have a spreadsheet, make one
-#    print("WE HAVE AN ERROR")
-
-#requests_cache.install_cache('lastfm_cache')
-
-
 def lastfm_get(payload):
     # define headers and URL
     headers = {'user-agent': 'noahwlibby'}
@@ -113,6 +103,7 @@ def lastfm_get(payload):
 
     response = requests.get(url, headers=headers, params=payload)
     return response
+
 
 def jprint(obj):
     # Create a formatted string of the Python JSON object
@@ -156,17 +147,13 @@ def get_tracks():
         # append response
         responses.append(response)
 
-        # open file - outside of while loop
-        # does this data already exist in the file?
-        # if no, append it to the end of the file
-        # at the end, close the file - outside of while loop
-
         # if it's not a cached result, sleep
         if not getattr(response, 'from_cache', False):
             time.sleep(0.25)
 
         # increment the page number
         page += 1
+
     return responses
 
 responses = get_tracks()
@@ -177,8 +164,18 @@ alltracks.info()
 #alltracks.head()
 
 
+date_dump2 = alltracks['date'].dropna() # gets rid of NA values (for currently listening to tracks)
+date_dump2 = date_dump2.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
 
-# Also figure out why the api isn't actually pulling in new data. Probably somethin to do with the way that the cache is set up
+lst2 = []
+for i in range(1, date_dump2.count()):
+    lst.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
+
+maxDate = (max(lst2))
+g = open("maxDateRepo.csv", "w")
+g.write(maxDate)
+g.close() # close the file
+
 
 def playing_now(df):
     pos = 0
@@ -250,19 +247,3 @@ print(track_count)
 
 #if __name__ == "__main__":
 # user = input("Username: ")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #
