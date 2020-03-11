@@ -7,6 +7,7 @@ from IPython.core.display import clear_output
 import pandas as pd
 import math
 import csv
+import config
 
 # todo:
 # throw all of the json data into a pandas dataframe so that I can see it better
@@ -21,8 +22,8 @@ import csv
 #404: The resource you tried to access wasn’t found on the server.
 #503: The server is not ready to handle the request.
 
-#apikey = 6a76bb9ed119dd4394c3f3bb5c0dcbd3
-#shared_secret = a571d9b0049be7880a5da881da7df6d7
+API_KEY = config.api_key
+API_SECRET = config.api_secret
 
 
 #requests_cache.install_cache('lastfm_cache')
@@ -34,7 +35,7 @@ def lastfm_get(payload):
     url = 'http://ws.audioscrobbler.com/2.0/'
 
     # Add API key and format to the payload
-    payload['api_key'] = '6a76bb9ed119dd4394c3f3bb5c0dcbd3'
+    payload['api_key'] = API_KEY
     payload['format'] = 'json'
 
     response = requests.get(url, headers=headers, params=payload)

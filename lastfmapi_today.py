@@ -13,6 +13,7 @@ import csv
 import os.path
 from os import path
 from operator import attrgetter
+import config
 
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
 # All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
@@ -28,9 +29,6 @@ from operator import attrgetter
 #404: The resource you tried to access wasn’t found on the server.
 #503: The server is not ready to handle the request.
 
-#apikey = 6a76bb9ed119dd4394c3f3bb5c0dcbd3
-#shared_secret = a571d9b0049be7880a5da881da7df6d7
-
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
 #requests_cache.install_cache('lastfm_cache')
 
@@ -41,6 +39,9 @@ from operator import attrgetter
 
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
+
+API_KEY = config.api_key
+API_SECRET = config.api_secret
 
 #################################
 ##### FUNCTION DEFINITIONS ######
@@ -74,7 +75,7 @@ def lastfm_get(payload):
     url = 'http://ws.audioscrobbler.com/2.0/'
 
     # Add API key and format to the payload
-    payload['api_key'] = '6a76bb9ed119dd4394c3f3bb5c0dcbd3'
+    payload['api_key'] = API_KEY
     payload['format'] = 'json'
 
     response = requests.get(url, headers=headers, params=payload)

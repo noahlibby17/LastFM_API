@@ -13,11 +13,9 @@ import math
 import os.path
 from os import path
 from operator import attrgetter
+import config
 
-# Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
-# All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
-
-# Only set the API to pull data from the max date in the csv file
+# Grab songs that are currently playing to send out to IFTTT
 
 # API Response Codes
 #200: Everything went okay, and the result has been returned (if any).
@@ -28,16 +26,8 @@ from operator import attrgetter
 #404: The resource you tried to access wasn’t found on the server.
 #503: The server is not ready to handle the request.
 
-#apikey = 6a76bb9ed119dd4394c3f3bb5c0dcbd3
-#shared_secret = a571d9b0049be7880a5da881da7df6d7
-
-# ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
-#requests_cache.install_cache('lastfm_cache')
-
-## TO DO:
-# • Move the storage from .csv to sqlite database
-# • Copy/move code to get max value from the top to inside/before API call
-# • Store the max values in a separate .csv file for easier parsing and call that file when trying to find max value
+API_KEY = config.api_key
+API_SECRET = config.api_secret
 
 def string_to_dict(dict_string):
     # Convert to proper json format
