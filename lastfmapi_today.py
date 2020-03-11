@@ -34,8 +34,7 @@ import config
 
 ## TO DO:
 # • Move the storage from .csv to sqlite database
-# • Copy/move code to get max value from the top to inside/before API call
-# • Store the max values in a separate .csv file for easier parsing and call that file when trying to find max value
+# • Every week, move current db file and maxdate file to a subfolder, delete them from the main folder, and rerun the whole query. Have a catch for if the backend fails and rerun it
 
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
@@ -64,7 +63,7 @@ def readDataFindMax(filename):
         for i in range(1, date_dump.count()):
             lst.append(int(date_dump.iloc[i]['uts']))
 
-        pullDate = (max(lst))
+        pullDate = int((max(lst)))
         del lst
         return pullDate
         # SAVE THIS: print(date_dump.iloc[1]['uts']) # this might be a much simpler solution if the .csv is ordered by timestamp
@@ -125,8 +124,8 @@ def get_tracks():
         responses.append(response)
 
         # if it's not a cached result, sleep
-        if not getattr(response, 'from_cache', False):
-            time.sleep(0.25)
+        #if not getattr(response, 'from_cache', False):
+        time.sleep(0.25)
 
         # increment the page number
         page += 1
@@ -196,7 +195,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     f = open("lastfm_db.csv", "w")
     header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
-    pullDate = "1"    # set max date as 1970
+    pullDate = 1    # set max date as 1970
     f.close()
 
     g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
@@ -205,10 +204,11 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     g.close()
     print("BACK IN BUSINESS")
 
-# bring the list of lists into a list of dataframes and then to a single df
+# call get tracks, bring the list of lists into a list of dataframes and then to a single df, then reverse the order
 responses = get_tracks()
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
+alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the bottom. Makes appending easier
 alltracks.info() # prints info about the df
 
 # remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
@@ -226,13 +226,10 @@ if playing_now_check(alltracks) == True:
     print('DROPPED')
 
     ### APPEND ALLTRACKS TO THE .CSV DB FILE
-    alltracks.to_csv('lastfm_db_full.csv', mode="a", header=False)
-    alltracks.iloc[2:,:].to_csv('lastfm_db.csv', mode="a", header=False)
-    alltracks.iloc[2:,:].to_csv('lastfm_db_iloc.csv', mode="a", header=False)
-
+    alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
 
     ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[2:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
+    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
     for i in range(1, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
@@ -241,7 +238,7 @@ if playing_now_check(alltracks) == True:
     maxDate = (max(lst2))
     g = open('maxDateRepo.csv', 'a+')
     csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.now(),maxDate]) # Add contents of list as last row in the csv file
+    csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
     g.close() # close the file
 
 
@@ -249,11 +246,12 @@ if playing_now_check(alltracks) == True:
 
 
 
-elif playing_now_check == False:
+elif playing_now_check(alltracks) == False:
     print('Not currently listening. Makes the code easier...')
+    time.sleep(5)
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
     ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks['date'].iloc[1:,:].dropna() # gets rid of NA values (for currently listening to tracks)
+    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
     for i in range(1, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
@@ -262,7 +260,7 @@ elif playing_now_check == False:
     maxDate = (max(lst2))
     g = open('maxDateRepo.csv', 'a+')
     csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.now(),maxDate]) # Add contents of list as last row in the csv file
+    csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
     g.close() # close the file
 
 
