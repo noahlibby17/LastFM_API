@@ -178,7 +178,7 @@ if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exist
         #dates = db['date'] # gets just the data column into a series
     print('We have a max date file! Reading from max date file...')
     db = pd.read_csv('maxDateRepo.csv', delimiter = ',') #, usecols=['date']) # read the csv
-    pullDate = db[['MaxDate']].idxmax()
+    pullDate = db[['MaxDate']].max()
     print(pullDate)
 
     """
@@ -196,7 +196,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     f = open("lastfm_db.csv", "w")
     header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
-    pullDate = "1572584400"    # set max date as a date before when I started scrobbling
+    pullDate = "1"    # set max date as 1970
     f.close()
 
     g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
@@ -216,12 +216,20 @@ if playing_now_check(alltracks) == True:
     print('Currently listening!')
     #alltracks[alltracks['@attr'] != '{\'nowplaying\': \'true\'}']
     # Get names of indexes for which column Age has value 30
-    indexNames = alltracks[alltracks['@attr'] == '{\'nowplaying\': \'true\'}'].index
-    # Delete these row indexes from dataFrame
-    alltracks.drop(alltracks[indexNames] , inplace=True)
+    #indexNames = alltracks.loc[alltracks['@attr'].notnull()].index
+    #print(alltracks.loc[alltracks['@attr']])
+
+    alltracks = alltracks[alltracks['@attr'].isna()] # gets rid of rows that have currently playing track
+    alltracks = alltracks.drop(['@attr'], axis=1) # drops @attr column
+    alltracks.info()
+
     print('DROPPED')
+
     ### APPEND ALLTRACKS TO THE .CSV DB FILE
+    alltracks.to_csv('lastfm_db_full.csv', mode="a", header=False)
     alltracks.iloc[2:,:].to_csv('lastfm_db.csv', mode="a", header=False)
+    alltracks.iloc[2:,:].to_csv('lastfm_db_iloc.csv', mode="a", header=False)
+
 
     ### SAVE THE MAX DATE FOR REF
     date_dump2 = alltracks.iloc[2:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
@@ -244,7 +252,6 @@ if playing_now_check(alltracks) == True:
 elif playing_now_check == False:
     print('Not currently listening. Makes the code easier...')
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
-
     ### SAVE THE MAX DATE FOR REF
     date_dump2 = alltracks['date'].iloc[1:,:].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
