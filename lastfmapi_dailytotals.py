@@ -14,7 +14,6 @@ from os import path
 #
 
 # For now: just grab data from current day. Grab data from db csv for today
-#
 
 def string_to_dict(dict_string):
     # Convert to proper json format
@@ -24,13 +23,14 @@ def string_to_dict(dict_string):
 def readDateData(filename, date):
 
         # read the file using only select date and the date right before and the date right after to account for timezone differences
+        db = pd.read_csv(filename, delimiter = ',')
+
         # convert dates timezone I want
         # count the number of rows with that date
         # add this number to another spreadsheet called lastfmapi_today.csv which has a row for day and a row for total.
-        # for now, just update the value in the row  with that date. Can append it at another point 
+        # for now, just update the value in the row  with that date. Can append it at another point
 
 
-        db = pd.read_csv(filename, delimiter = ',') #, usecols=['date']) # read the csv
         print('loaded')
 
         date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)

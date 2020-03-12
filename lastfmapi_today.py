@@ -36,6 +36,7 @@ import config
 # • Move the storage from .csv to sqlite database
 # • Every week, move current db file and maxdate file to a subfolder, delete them from the main folder, and rerun the whole query. Have a catch for if the backend fails and rerun it
 # • Log total songs per day
+# • If the script is run with the same max date as before, it is adding the same songs
 
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
@@ -61,7 +62,7 @@ def readDataFindMax(filename):
         date_dump.to_csv("data_dump.csv", header=True)
 
         lst = []
-        for i in range(1, date_dump.count()):
+        for i in range(0, date_dump.count()):
             lst.append(int(date_dump.iloc[i]['uts']))
 
         pullDate = int((max(lst)))
@@ -164,7 +165,6 @@ def playing_now_check(df):
     except:
         return False
 
-
 ##########################
 ##### FUNCTION CALLS #####
 ##########################
@@ -194,7 +194,7 @@ elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't
     print("First time running! Welcome to the SCROBBLE :)")
     time.sleep(3)
     f = open("lastfm_db.csv", "w")
-    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url"]) # don't add a column for currently listening
+    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url", "unixdate"]) # don't add a column for currently listening
     header.to_csv(f, header=True)
     pullDate = 1    # set max date as 1970
     f.close()
@@ -210,6 +210,20 @@ responses = get_tracks()
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
 alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the bottom. Makes appending easier
+#alltracks['unixdate'] = ''
+
+# add column with converted unix times in UTC
+"""for i in range(0, alltracks['date'].count()):
+    print(str(i) + ' out of ' + str(alltracks['date'].count()))
+    unix = alltracks['date'].iloc[i]['uts']
+    h = open('trying.csv', 'a+')
+    csv_writer = csv.writer(h)
+    csv_writer.writerow(unix) # Add contents of list as last row in the csv file
+
+    print(unix)
+    #print('hey: ' + str(alltracks['date'].iloc[i]['uts']))
+    #alltracks['unixdate'].iloc[i] = unix
+"""
 alltracks.info() # prints info about the df
 
 # remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
@@ -232,7 +246,7 @@ if playing_now_check(alltracks) == True:
     ### SAVE THE MAX DATE FOR REF
     date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
-    for i in range(1, date_dump2.count()):
+    for i in range(0, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
 
     # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
@@ -243,10 +257,6 @@ if playing_now_check(alltracks) == True:
     g.close() # close the file
 
 
-###### LEFT OFF: Trying to get maxdate to pull properly from maxdaterepo, trying to delete rows with currently listenign tracks and writing only columns that I want
-
-
-
 elif playing_now_check(alltracks) == False:
     print('Not currently listening. Makes the code easier...')
     time.sleep(5)
@@ -254,7 +264,7 @@ elif playing_now_check(alltracks) == False:
     ### SAVE THE MAX DATE FOR REF
     date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
-    for i in range(1, date_dump2.count()):
+    for i in range(0, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
 
     # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
