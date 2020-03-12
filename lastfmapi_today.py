@@ -35,6 +35,7 @@ import config
 ## TO DO:
 # • Move the storage from .csv to sqlite database
 # • Every week, move current db file and maxdate file to a subfolder, delete them from the main folder, and rerun the whole query. Have a catch for if the backend fails and rerun it
+# • Log total songs per day
 
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
@@ -262,20 +263,3 @@ elif playing_now_check(alltracks) == False:
     csv_writer = csv.writer(g)
     csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
     g.close() # close the file
-
-
-
-def totalsongstoday(df):
-    today = date.today()
-
-
-"""
-# get track counts
-track_count = [len(r.json()['recenttracks']['track']) for r in responses]
-pd.Series(track_count).value_counts()
-print(track_count)
-"""
-
-
-#if __name__ == "__main__":
-# user = input("Username: ")

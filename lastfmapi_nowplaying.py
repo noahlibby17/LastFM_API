@@ -26,6 +26,10 @@ import config
 #404: The resource you tried to access wasn’t found on the server.
 #503: The server is not ready to handle the request.
 
+# TO DO
+# • Add new column that converts date to local time
+# • Have a script that pulls from the db csv to grab how many songs were played each day --> log in another csv
+
 API_KEY = config.api_key
 API_SECRET = config.api_secret
 
