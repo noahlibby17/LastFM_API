@@ -213,16 +213,17 @@ alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the b
 #alltracks['unixdate'] = ''
 
 # add column with converted unix times in UTC
-for i in range(0, alltracks['date'].count()):
+"""for i in range(0, alltracks['date'].count()):
     print(str(i) + ' out of ' + str(alltracks['date'].count()))
     unix = alltracks['date'].iloc[i]['uts']
     h = open('trying.csv', 'a+')
     csv_writer = csv.writer(h)
     csv_writer.writerow(unix) # Add contents of list as last row in the csv file
 
+    print(unix)
     #print('hey: ' + str(alltracks['date'].iloc[i]['uts']))
     #alltracks['unixdate'].iloc[i] = unix
-
+"""
 alltracks.info() # prints info about the df
 
 # remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
@@ -243,7 +244,7 @@ if playing_now_check(alltracks) == True:
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
 
     ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[0:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
+    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
     for i in range(0, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
@@ -258,10 +259,10 @@ if playing_now_check(alltracks) == True:
 
 elif playing_now_check(alltracks) == False:
     print('Not currently listening. Makes the code easier...')
-    time.sleep(1)
+    time.sleep(5)
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
     ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[0:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
+    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
     for i in range(0, date_dump2.count()):
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
