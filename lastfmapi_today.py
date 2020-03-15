@@ -210,20 +210,8 @@ responses = get_tracks()
 frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
 alltracks = pd.concat(frames, sort=True)
 alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the bottom. Makes appending easier
-#alltracks['unixdate'] = ''
+alltracks['unixdate'] = ''
 
-# add column with converted unix times in UTC
-"""for i in range(0, alltracks['date'].count()):
-    print(str(i) + ' out of ' + str(alltracks['date'].count()))
-    unix = alltracks['date'].iloc[i]['uts']
-    h = open('trying.csv', 'a+')
-    csv_writer = csv.writer(h)
-    csv_writer.writerow(unix) # Add contents of list as last row in the csv file
-
-    print(unix)
-    #print('hey: ' + str(alltracks['date'].iloc[i]['uts']))
-    #alltracks['unixdate'].iloc[i] = unix
-"""
 alltracks.info() # prints info about the df
 
 # remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
@@ -239,6 +227,11 @@ if playing_now_check(alltracks) == True:
     alltracks.info()
 
     print('DROPPED')
+
+    ### Add column with just unix time dates
+    for i in range(0, alltracks['date'].count()):
+        unix = alltracks['date'].iloc[i]['uts']
+        alltracks['unixdate'].iloc[i] = unix
 
     ### APPEND ALLTRACKS TO THE .CSV DB FILE
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
@@ -259,8 +252,14 @@ if playing_now_check(alltracks) == True:
 
 elif playing_now_check(alltracks) == False:
     print('Not currently listening. Makes the code easier...')
-    time.sleep(5)
+    ### Add column with just unix time dates
+    for i in range(0, alltracks['date'].count()):
+        unix = alltracks['date'].iloc[i]['uts']
+        alltracks['unixdate'].iloc[i] = unix
+
+    time.sleep(1)
     alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
+
     ### SAVE THE MAX DATE FOR REF
     date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
     lst2 = []
