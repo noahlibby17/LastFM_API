@@ -18,7 +18,9 @@ import config
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
 # All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
 
-# Only set the API to pull data from the max date in the csv file
+##### IMPORTANT ######
+# PULL MAX DATE + 1 SO THAT WE DON'T PULL THE SAME SONG THAT WE PULLED LAST TIME
+##### IMPORTANT #####
 
 # API Response Codes
 #200: Everything went okay, and the result has been returned (if any).
@@ -243,7 +245,7 @@ if playing_now_check(alltracks) == True:
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
 
     # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))
+    maxDate = (max(lst2))+1 # plus 1 so it doesn't pull the same song
     g = open('maxDateRepo.csv', 'a+')
     csv_writer = csv.writer(g)
     csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
@@ -267,7 +269,7 @@ elif playing_now_check(alltracks) == False:
         lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
 
     # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))
+    maxDate = (max(lst2))+1 # plus 1 so it doesn't pull the same song
     g = open('maxDateRepo.csv', 'a+')
     csv_writer = csv.writer(g)
     csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
