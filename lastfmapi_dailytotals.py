@@ -66,19 +66,18 @@ def readDateData(filename, targetDate, delta):
 
         #db.to_csv("newdump.csv", header=False)
 
+# define main function
+if __name__ == "__main__":
+
+    if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
+
+        unixDate = 1584230400
+        dt = datetime.fromtimestamp(unixDate) # convert to unix time
+        readDateData('lastfm_db.csv', dt, secondsOffUTC)
 
 
-
-if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
-
-    unixDate = 1584230400
-    dt = datetime.fromtimestamp(unixDate) # convert to unix time
-    readDateData('lastfm_db.csv', dt, secondsOffUTC)
-
-
-
-elif path.exists('lastfm_db.csv') == False:
-    pass
+    elif path.exists('lastfm_db.csv') == False:
+        pass
 
 
 
