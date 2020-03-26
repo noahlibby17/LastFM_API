@@ -25,13 +25,21 @@ def string_to_dict(dict_string):
     dict_string = dict_string.replace("\'", "\"")
     return json.loads(dict_string)
 
-def convertTimeZone(unix_date):
-    return unix_date + secondsOffUTC
+def convertTimeZone(unix_date, delta):
+    # positive delta moves west, negative delta moves east from UTC
+    return unix_date - delta
+
+def unixToDatetime(unix_date):
+    string = datetime.fromtimestamp(int(unix_date)).strftime('%Y-%m-%d')
+    dt = datetime.strptime(string, '%Y-%m-%d')
+    return dt.date()
+
+
 
 
 #86400 # day in seconds
 
-def readDateData(filename, targetDate):
+def readDateData(filename, targetDate, delta):
         # count the number of rows with that date
         # add this number to another spreadsheet called lastfmapi_today.csv which has a row for day and a row for total.
         # for now, just update the value in the row  with that date. Can append it at another point
@@ -42,14 +50,19 @@ def readDateData(filename, targetDate):
         # read the file using only select date and the date right before and the date right after to account for timezone differences
         db = pd.read_csv(filename, delimiter = ',', usecols = ['unixdate'])
         # convert dates to timezone I want
-        db['timezoneDate'] = db['unixdate'].apply(convertTimeZone)
+        db['timezoneDate'] = db['unixdate'].apply(convertTimeZone, args = [delta])
         # trim down to only two days surrounding target date
-        db[db['timezoneDate'] > (unixTargetDate - 86400)]
-        db[db['timezoneDate'] < (unixTargetDate + 86400)]
-        #db['dayName'] = db['timezoneDate']
+        db = db[db['timezoneDate'] > (unixTargetDate - 86400)] # preprocess
+        db = db[db['timezoneDate'] < (unixTargetDate + 86400)] # preprocess
+        db['dayName'] = db['timezoneDate'].apply(unixToDatetime) # convert timestamps to dates
+        db = db[db['dayName'] == targetDate.date()] # save only target date
+
+        # count entries
+        daily_count = (db.shape[0]) - 1 # drop one row to account for column names
+
         print(db)
         print('loaded')
-
+        print("Daily Count: " + str(daily_count))
 
         #db.to_csv("newdump.csv", header=False)
 
@@ -58,10 +71,9 @@ def readDateData(filename, targetDate):
 
 if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
 
-    now = datetime.now()
-    print(now)
-    timestamp = datetime.timestamp(now) # convert to unix time
-    readDateData('lastfm_db.csv', now)
+    unixDate = 1584230400
+    dt = datetime.fromtimestamp(unixDate) # convert to unix time
+    readDateData('lastfm_db.csv', dt, secondsOffUTC)
 
 
 
