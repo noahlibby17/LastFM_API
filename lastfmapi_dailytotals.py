@@ -58,7 +58,7 @@ def readDateData(filename, targetDate, delta):
         db = db[db['dayName'] == targetDate.date()] # save only target date
 
         # count entries
-        daily_count = (db.shape[0]) - 1 # drop one row to account for column names
+        daily_count = (db.shape[0]) - 1 # drop one row to account for column names row
 
         print(db)
         print('loaded')
