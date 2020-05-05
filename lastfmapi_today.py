@@ -61,7 +61,7 @@ def readDataFindMax(filename):
 
         date_dump = db['date'].dropna() # gets rid of NA values (for currently listening to tracks)
         date_dump = date_dump.apply(string_to_dict) # replaces single quotes and json.loads into dictionaries
-        date_dump.to_csv("data_dump.csv", header=True)
+        date_dump.to_csv("dewey_data_dump.csv", header=True)
 
         lst = []
         for i in range(0, date_dump.count()):
