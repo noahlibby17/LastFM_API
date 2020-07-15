@@ -65,12 +65,16 @@ def readDateData(filename, targetDate, delta):
         print("Daily Count: " + str(daily_count))
 
         #db.to_csv("newdump.csv", header=False)
+        return daily_count
 
 # define main function
 if __name__ == "__main__":
 
     if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
 
+        print("Type in input date: ")
+        inputDate = input()
+        print(inputDate)
         unixDate = 1584230400
         dt = datetime.fromtimestamp(unixDate) # convert to unix time
         readDateData('lastfm_db.csv', dt, secondsOffUTC)
