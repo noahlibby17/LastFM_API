@@ -34,12 +34,6 @@ import config
 # ONLY GRAB DATA THAT WE HAVE NOT GRABBED YET
 #requests_cache.install_cache('lastfm_cache')
 
-## TO DO:
-# • Move the storage from .csv to sqlite database
-# • Every week, move current db file and maxdate file to a subfolder, delete them from the main folder, and rerun the whole query. Have a catch for if the backend fails and rerun it
-# • Log total songs per day
-# • If the script is run with the same max date as before, it is adding the same songs
-
 # create another .csv with a sum for each day of songs played that can be an easy reference. That will be added to each time the API is called and there is new data
 # Make another csv file to log the max dates from every api call so that there is less to cull through when getting max date
 
