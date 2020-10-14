@@ -254,7 +254,7 @@ def main(): # add param for username
         ######################
 
         #Create connection to database file
-        database = r"/Users/noahlibby/Documents/code/LastFM_API/lastfm.db"
+        database = r"/Users/noahlibby/Documents/code/LastFM_API/lastfm.sqlite"
         conn = create_connection(database)
         # create tables
         if conn is not None:
@@ -281,7 +281,7 @@ def main(): # add param for username
         ######################
 
         #Create connection to database file
-        database = r"/Users/noahlibby/Documents/code/LastFM_API/lastfm.db"
+        database = r"/Users/noahlibby/Documents/code/LastFM_API/lastfm.sqlite"
         conn = create_connection(database)
         # create tables
         if conn is not None:
