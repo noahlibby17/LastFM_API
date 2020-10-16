@@ -14,10 +14,7 @@ import os.path
 from os import path
 from operator import attrgetter
 import config
-<<<<<<< HEAD
 import sqlite3
-=======
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
 
 # Mimics the functionality of the Last.FM website by saying how many songs were listened to today.
 # All dates are in UTC, so if I want to get it in my timezone, I'll need to make a new column with converted times
@@ -53,10 +50,7 @@ def string_to_dict(dict_string):
     dict_string = dict_string.replace("\'", "\"")
     return json.loads(dict_string)
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
 def readDataFindMax(filename):
         db = pd.read_csv(filename, delimiter = ',') #, usecols=['date']) # read the csv
         print('loaded')
@@ -106,11 +100,7 @@ def get_tracks():
             'extended': 1,
             'limit': 200,
             'page': page,
-<<<<<<< HEAD
             'from': 1598918400 # sept 1 2020 #1546300800 # january 1st 2019
-=======
-            'from': pullDate
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
         }
 
         # print some of the output so we can see the status
@@ -173,10 +163,7 @@ def playing_now_check(df):
     except:
         return False
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
 def create_connection(db_file):
     """ create a database connection to the SQLite database
         specified by db_file
@@ -191,7 +178,6 @@ def create_connection(db_file):
 
     return conn
 
-<<<<<<< HEAD
 
 def create_user_table(conn,user): # creates a table for the user if one does not exist
     """ create a table from the create_table_sql statement
@@ -199,17 +185,18 @@ def create_user_table(conn,user): # creates a table for the user if one does not
     :param lastfm_user: a CREATE TABLE statement
     :return:
     """
+    print(f"Creating table for {user}")
     sql_create_user_table = f""" CREATE TABLE IF NOT EXISTS {user}_music (
-                                              album text
-                                            , artist text
-                                            , date text
-                                            , image text
-                                            , loved integer
-                                            , mbid text
-                                            , name text
-                                            , streamable integer
-                                            , url text
-                                            , unixdate integer
+                                              album TEXT
+                                            , artist TEXT
+                                            , date TEXT
+                                            , image TEXT
+                                            , loved TEXT
+                                            , mbid TEXT
+                                            , name TEXT
+                                            , streamable TEXT
+                                            , url TEXT
+                                            , unixdate TEXT
                                         ); """
     try:
         c = conn.cursor()
@@ -231,25 +218,7 @@ def add_song(conn, user, entry):
               VALUES(?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql,entry)
-=======
-def add_song(conn, song):
-    """
-    Create a new task
-    :param conn:
-    :param task:
-    :return:
-    """
 
-    sql = ''' INSERT INTO songs(album,artist,date,image,loved,mbid,name,streamable,url,unixdate)
-              VALUES(?,?,?,?,?,?,?,?,?,?) '''
-    cur = conn.cursor()
-    cur.execute(sql, task)
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
-    conn.commit()
-
-    return cur.lastrowid
-
-<<<<<<< HEAD
 
 def main(): # add param for username
     #########################
@@ -262,6 +231,8 @@ def main(): # add param for username
     alltracks = pd.concat(frames, sort=True)
     alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the bottom. Makes appending easier
     alltracks['unixdate'] = ''
+
+    ###PULL THE RELEVANT VALUES OUT OF THE DICTIONARIES AND JUST HAVE THEM BE STRINGS###
 
     alltracks.info() # prints info about the df
 
@@ -287,12 +258,13 @@ def main(): # add param for username
         conn = create_connection(database)
         # create tables
         if conn is not None:
-            # create projects table
+            # create user table
             create_user_table(conn, 'noah')
-            print('table exists!')
+            print(alltracks.head())
+            print(alltracks.dtypes())
         else:
             print("Error! Cannot create the database connection.")
-        alltracks.to_sql(name='noah_music', con=conn, if_exists='replace')
+        alltracks.to_sql(name='noah_music', con=conn, if_exists='replace',index=False)
         print('ADDED TO DB')
         conn.close()
 
@@ -312,14 +284,16 @@ def main(): # add param for username
         #Create connection to database file
         database = r"/Users/noahlibby/Documents/code/LastFM_API/lastfm.sqlite"
         conn = create_connection(database)
+
         # create tables
         if conn is not None:
-            # create projects table
+            # create user table
             create_user_table(conn, 'noah')
-            print('table exists!')
+            print(alltracks.head())
+            print(alltracks.dtypes())
         else:
             print("Error! Cannot create the database connection.")
-        alltracks.to_sql(name='noah_music', con=conn, if_exists='replace')
+        alltracks.to_sql(name='noah_music', con=conn, if_exists='replace',index=False)
         print('ADDED TO DB')
         conn.close()
 
@@ -327,130 +301,5 @@ def main(): # add param for username
 #### CALL MAIN FUNC ###
 #######################
 if __name__ == '__main__':
-    # add command line param or call function to get lastfm username
+    # add command line param or call function to get lastfm username - replace all uses of noah to user
     main()
-=======
-##########################
-##### FUNCTION CALLS #####
-##########################
-
-# Load up the most recent date added to the .csv db
-if path.exists('lastfm_db.csv') == True:     # check to see if spreadsheet exists
-    print('File exists! Wonderful! You are a pro!')
-    print('loading')
-
-    #if path.exists('maxDateRepo.csv') == True:
-        #dates = db['date'] # gets just the data column into a series
-    print('We have a max date file! Reading from max date file...')
-    db = pd.read_csv('maxDateRepo.csv', delimiter = ',') #, usecols=['date']) # read the csv
-    pullDate = db[['MaxDate']].max()
-    print(pullDate)
-
-    """
-    # Just to catch some extra errors for now... will probably deprecate this catch
-    elif path.exists('maxDateRepo.csv') == False:
-        #dates = db['date'] # gets just the data column into a series
-        print('We DO NOT have a max date file! Reading from overall database...')
-        readDataFindMax('lastfm_db.csv')
-    """
-
-elif path.exists('lastfm_db.csv') == False: # throw an error if the file doesn't exist, carry on to except
-    print("File does not exist!")
-    print("First time running! Welcome to the SCROBBLE :)")
-    time.sleep(3)
-    f = open("lastfm_db.csv", "w")
-    header = pd.DataFrame(columns = ["album", "artist", "date", "image", "loved", "mbid", "name", "streamable", "url", "unixdate"]) # don't add a column for currently listening
-    header.to_csv(f, header=True)
-    pullDate = 1    # set max date as 1970
-    f.close()
-
-    g = open("maxDateRepo.csv", "w") # creates a file to store all of the max dates so we don't have to cull through every date every time
-    header = pd.DataFrame(columns = ['MaxDate']) # don't add a column for currently listening
-    header.to_csv(g, header=True)
-    g.close()
-    print("BACK IN BUSINESS")
-
-# call get tracks, bring the list of lists into a list of dataframes and then to a single df, then reverse the order
-responses = get_tracks()
-frames = [pd.DataFrame(r.json()['recenttracks']['track']) for r in responses]
-alltracks = pd.concat(frames, sort=True)
-alltracks = alltracks.iloc[::-1] # flip the df so most recent songs are at the bottom. Makes appending easier
-alltracks['unixdate'] = ''
-
-alltracks.info() # prints info about the df
-
-#Create connection to database file
-database = r"/Users/noahlibby/Documents/code/LastFM_API/noah_lastfm.db"
-conn = create_connection(database)
-
-# remove rows for tracks that are currently being played from dataset; they will be added in the next api call once the song is over
-if playing_now_check(alltracks) == True:
-    print('Currently listening!')
-    #alltracks[alltracks['@attr'] != '{\'nowplaying\': \'true\'}']
-    # Get names of indexes for which column Age has value 30
-    #indexNames = alltracks.loc[alltracks['@attr'].notnull()].index
-    #print(alltracks.loc[alltracks['@attr']])
-
-    alltracks = alltracks[alltracks['@attr'].isna()] # gets rid of rows that have currently playing track
-    alltracks = alltracks.drop(['@attr'], axis=1) # drops @attr column
-    alltracks.info()
-
-    print('DROPPED')
-
-    ### Add column with just unix time dates
-    for i in range(0, alltracks['date'].count()):
-        unix = alltracks['date'].iloc[i]['uts']
-        alltracks['unixdate'].iloc[i] = unix
-
-    ### APPEND ALLTRACKS TO THE .CSV DB FILE
-    alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
-
-    ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
-    lst2 = []
-    for i in range(0, date_dump2.count()):
-        lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
-
-    # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))+1 # plus 1 so it doesn't pull the same song
-    g = open('maxDateRepo.csv', 'a+')
-    csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
-    g.close() # close the file
-
-    # Add data to database
-    with conn:
-        for i in range(0, alltracks['date'].count()):
-                entry = alltracks[i,:]
-                song_entry = add_song(conn,entry)
-
-
-elif playing_now_check(alltracks) == False:
-    print('Not currently listening. Makes the code easier...')
-    ### Add column with just unix time dates
-    for i in range(0, alltracks['date'].count()):
-        unix = alltracks['date'].iloc[i]['uts']
-        alltracks['unixdate'].iloc[i] = unix
-
-    time.sleep(1)
-    alltracks.to_csv('lastfm_db.csv', mode="a", header=False)
-
-    ### SAVE THE MAX DATE FOR REF
-    date_dump2 = alltracks.iloc[1:,:]['date'].dropna() # gets rid of NA values (for currently listening to tracks)
-    lst2 = []
-    for i in range(0, date_dump2.count()):
-        lst2.append(int(date_dump2.iloc[i]['uts'])) # remember that every 201 row is missing because of dropna()
-
-    # Get max date from this pull and add it to maxDateRepo.csv file for easy reference
-    maxDate = (max(lst2))+1 # plus 1 so it doesn't pull the same song
-    g = open('maxDateRepo.csv', 'a+')
-    csv_writer = csv.writer(g)
-    csv_writer.writerow([datetime.fromtimestamp(pullDate),maxDate]) # Add contents of list as last row in the csv file
-    g.close() # close the file
-
-    # Add data to database
-    with conn:
-        for i in range(0, alltracks['date'].count()):
-                entry = alltracks[i,:]
-                song_entry = add_song(conn,entry)
->>>>>>> 1f10fa92d38b90dc29ae062df0c0c48978b58841
